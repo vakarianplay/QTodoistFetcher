@@ -54,11 +54,12 @@ void TodoistData::fetchTasks(QNetworkAccessManager &manager) {
 
             for (const QJsonValue &taskValue : tasks) {
                 QJsonObject taskObject = taskValue.toObject();
-                qDebug() << "- " << taskObject["content"].toString() << " ---------- " << taskObject["project_id"].toString();
+                qDebug() << "- " << taskObject["content"].toString() << " ---------- " << taskObject["project_id"].toString() << " -- "
+                         << taskObject["assignee_id"].toString() << " -- " << taskObject["url"].toString() << " | " << taskObject["created_at"].toString();
 
-                if (taskObject.contains("project_id")) {
-                    qDebug() << " (Проект ID: " << taskObject["project_id"].toInt() << ")";
-                }
+                // if (taskObject.contains("project_id")) {
+                //     qDebug() << " (Проект ID: " << taskObject["project_id"].toInt() << ")";
+                // }
 
             }
         }
