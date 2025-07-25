@@ -33,6 +33,8 @@ private:
 
     void loadSettings();
     void fetchTasks(QNetworkAccessManager &manager);
+    void taskSerializer(QJsonArray tasks_);
+    QStringList taskFilter(const QJsonArray &tasks, const QString &projectId, const QString &assigneeId);
 
 };
 

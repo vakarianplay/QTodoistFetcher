@@ -7,7 +7,7 @@ Settings::Settings(QObject *parent)
 
     settings.beginGroup("Todoist");
     apiToken = settings.value("api_token").toString();
-    projectId = settings.value("project_url").toString();
+    projectId = settings.value("project_id").toString();
     assigneeId = settings.value("assignee_id").toString();
     settings.endGroup();
 

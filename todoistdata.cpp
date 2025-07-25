@@ -27,7 +27,7 @@ void TodoistData::fetchTasks(QNetworkAccessManager &manager) {
     // Выполняем GET запрос
     QNetworkReply *reply = manager.get(request);
 
-    QObject::connect(reply, &QNetworkReply::finished, [reply]() {
+    QObject::connect(reply, &QNetworkReply::finished, [reply, this]() {
         if (reply->error() != QNetworkReply::NoError) {
             qDebug() << "Ошибка запроса: " << reply->errorString().toStdString();
             reply->deleteLater();
@@ -45,25 +45,52 @@ void TodoistData::fetchTasks(QNetworkAccessManager &manager) {
             return;
         }
 
-        QJsonArray tasks = jsonDoc.array();
+        reply->deleteLater();
+        taskSerializer(jsonDoc.array());
+    });
+}
 
-        if (tasks.isEmpty()) {
-            qDebug() << "Нет задач, назначенных на вас.";
-        } else {
-            qDebug() << "Задачи, назначенные на вас:" << Qt::endl;
+void TodoistData::taskSerializer(QJsonArray tasks_)
+{
+    QJsonArray tasks = tasks_;
 
-            for (const QJsonValue &taskValue : tasks) {
-                QJsonObject taskObject = taskValue.toObject();
-                qDebug() << "- " << taskObject["content"].toString() << " ---------- " << taskObject["project_id"].toString() << " -- "
-                         << taskObject["assignee_id"].toString() << " -- " << taskObject["url"].toString() << " | " << taskObject["created_at"].toString();
+    if (tasks.isEmpty()) {
+        qDebug() << "Нет задач, назначенных на вас.";
+    } else {
+        qDebug() << "Задачи, назначенные на вас:" << Qt::endl;
 
-                // if (taskObject.contains("project_id")) {
-                //     qDebug() << " (Проект ID: " << taskObject["project_id"].toInt() << ")";
-                // }
+        for (const QJsonValue &taskValue : tasks) {
+            QJsonObject taskObject = taskValue.toObject();
+            // qDebug() << "- " << taskObject["content"].toString() << " ---------- " << taskObject["project_id"].toString() << " -- "
+            //          << taskObject["assignee_id"].toString() << " -- " << taskObject["url"].toString() << " | " << taskObject["created_at"].toString();
 
-            }
+
+            // if (taskObject.contains("project_id")) {
+            //     qDebug() << " (Проект ID: " << taskObject["project_id"].toInt() << ")";
+            // }
+
+        }
+        qDebug() << taskFilter(tasks, settingsData.projectId, settingsData.assigneeId);
+    }
+}
+
+QStringList TodoistData::taskFilter(const QJsonArray &tasks, const QString &projectId, const QString &assigneeId)
+{
+    QStringList result;
+
+    for (const QJsonValue &taskValue : tasks) {
+        QString buffstr = "";
+        QJsonObject taskObject = taskValue.toObject();
+
+        QString taskProjectId = taskObject["project_id"].toString();
+        QString taskAssigneeId = taskObject["assignee_id"].toString();
+
+        if (taskProjectId == projectId /*&& taskAssigneeId == assigneeId*/) {
+            buffstr = taskObject["content"].toString() + " --- " + taskObject["url"].toString() + " --- " + taskObject["created_at"].toString();
+            result.append(buffstr);
+            buffstr.clear();
         }
 
-        reply->deleteLater();
-    });
+    }
+    return result;
 }
