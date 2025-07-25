@@ -9,6 +9,7 @@ CONFIG += c++17 cmdline
 SOURCES += \
         main.cpp \
         settings.cpp \
+        tgsender.cpp \
         todoistdata.cpp
 
 # Default rules for deployment.
@@ -18,4 +19,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     settings.h \
+    tgsender.h \
     todoistdata.h

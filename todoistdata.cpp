@@ -70,7 +70,11 @@ void TodoistData::taskSerializer(QJsonArray tasks_)
             // }
 
         }
-        qDebug() << taskFilter(tasks, settingsData.projectId, settingsData.assigneeId);
+        QString taskData = filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), 30).join(" \n ");
+        qDebug() << taskData;
+        // qDebug() << filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), 30);
+        TgSender *tgSender = new TgSender(taskData);
+
     }
 }
 
@@ -85,7 +89,7 @@ QStringList TodoistData::taskFilter(const QJsonArray &tasks, const QString &proj
         QString taskProjectId = taskObject["project_id"].toString();
         QString taskAssigneeId = taskObject["assignee_id"].toString();
 
-        if (taskProjectId == projectId /*&& taskAssigneeId == assigneeId*/) {
+        if (taskProjectId == projectId && taskAssigneeId == assigneeId) {
             buffstr = taskObject["content"].toString() + " --- " + taskObject["url"].toString() + " --- " + taskObject["created_at"].toString();
             result.append(buffstr);
             buffstr.clear();
@@ -94,3 +98,34 @@ QStringList TodoistData::taskFilter(const QJsonArray &tasks, const QString &proj
     }
     return result;
 }
+
+QStringList TodoistData::filterRecentTasks(const QStringList &tasks, int timeThresholdMinutes) {
+    QStringList filteredTasks;
+    QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
+
+    for (const QString &task : tasks) {
+        // Парсим строку, чтобы извлечь метку времени (после последнего "---")
+        QStringList parts = task.split("---");
+        if (parts.size() < 3) {
+            qDebug() << "Ошибка: некорректный формат строки:" << task;
+            continue;
+        }
+
+        QString timestampStr = parts.last().trimmed();
+        QDateTime taskDateTime = QDateTime::fromString(timestampStr, Qt::ISODate);
+
+        if (!taskDateTime.isValid()) {
+            qDebug() << "Ошибка: некорректный формат времени:" << timestampStr;
+            continue;
+        }
+
+
+        qint64 timeDifferenceMinutes = taskDateTime.msecsTo(currentDateTime) / 60000;
+        if (timeDifferenceMinutes <= timeThresholdMinutes) {
+            filteredTasks.append(task);
+        }
+    }
+
+    return filteredTasks;
+}
+

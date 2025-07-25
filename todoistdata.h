@@ -12,6 +12,8 @@
 #include <QTextStream>
 #include "settings.h"
 #include <QDebug>
+#include <QDateTime>
+#include "tgsender.h"
 
 class TodoistData : public QObject
 {
@@ -35,6 +37,7 @@ private:
     void fetchTasks(QNetworkAccessManager &manager);
     void taskSerializer(QJsonArray tasks_);
     QStringList taskFilter(const QJsonArray &tasks, const QString &projectId, const QString &assigneeId);
+    QStringList filterRecentTasks(const QStringList &tasks, int timeThresholdMinutes);
 
 };
 
