@@ -4,8 +4,8 @@ TgSender::TgSender(QString message, QObject *parent)
     : QObject{parent}
 {
     qDebug() << "tg sender start --- " << message;
-    QString botToken = "";
-    QString userId = "";
+    QString botToken = settingsData.botToken;
+    QString userId = settingsData.tgUser;
 
     sendMessageToTelegramBot(botToken, message, userId);
 }

@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QDebug>
+#include "settings.h"
 
 class TgSender : public QObject
 {
@@ -17,6 +18,7 @@ public:
 
 private:
     void sendMessageToTelegramBot(const QString &botToken, const QString &message, const QString &userId);
+    Settings settingsData;
 
 };
 
