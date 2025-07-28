@@ -4,8 +4,21 @@ TodoistData::TodoistData(QObject *parent)
     : QObject{parent}
 {
     loadSettings();
+    threshold = new QTimer (this);
     fetchTasks(manager);
+    connect(threshold, SIGNAL(timeout()), this, SLOT(callFetcher()));
+    threshold->start(settingsData.timerThreshold);
+    qDebug() << "timer start - " << settingsData.timerThreshold;
 }
+
+TodoistData::~TodoistData()
+{
+    threshold->stop();
+    if (&manager)
+        delete &manager;
+}
+
+
 
 void TodoistData::loadSettings()
 {
@@ -13,7 +26,13 @@ void TodoistData::loadSettings()
     // settingsData.apiToken = setup.apiToken;
     // settingsData.assigneeId = setup.assigneeId;
     // settingsData.projectId = setup.projectId;
-    qDebug() << settingsData.apiToken;
+    qDebug() << settingsData.apiToken << "   " << settingsData.timerThreshold << "  " << settingsData.tgUser;
+}
+
+void TodoistData::callFetcher()
+{
+    qDebug() << "timer call fetcher";
+    fetchTasks(manager);
 }
 
 void TodoistData::fetchTasks(QNetworkAccessManager &manager) {
@@ -74,6 +93,9 @@ void TodoistData::taskSerializer(QJsonArray tasks_)
         qDebug() << taskData;
         // qDebug() << filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), 30);
         TgSender *tgSender = new TgSender(taskData);
+
+        if (tgSender)
+            delete tgSender;
 
     }
 }

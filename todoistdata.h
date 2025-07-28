@@ -14,16 +14,22 @@
 #include <QDebug>
 #include <QDateTime>
 #include "tgsender.h"
+#include <QTimer>
 
 class TodoistData : public QObject
 {
     Q_OBJECT
 public:
     explicit TodoistData(QObject *parent = nullptr);
+    ~TodoistData();
+
+private slots:
+    void callFetcher();
 
 private:
     Settings settingsData;
     QNetworkAccessManager manager;
+    QTimer* threshold;
     // struct SettingsParams
     // {
     //     QString apiToken;

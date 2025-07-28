@@ -15,6 +15,9 @@ public:
     QString apiToken;
     QString projectId;
     QString assigneeId;
+    qint32 timerThreshold;
+    QString botToken;
+    QString tgUser;
 
 
 private:
