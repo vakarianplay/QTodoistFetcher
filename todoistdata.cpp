@@ -89,7 +89,7 @@ void TodoistData::taskSerializer(QJsonArray tasks_)
             // }
 
         }
-        QString taskData = filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), 30).join(" \n ");
+        QString taskData = filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), settingsData.timerThreshold).join(" \n ");
         qDebug() << taskData;
         // qDebug() << filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), 30);
         TgSender *tgSender = new TgSender(taskData);
@@ -143,7 +143,7 @@ QStringList TodoistData::filterRecentTasks(const QStringList &tasks, int timeThr
 
 
         qint64 timeDifferenceMinutes = taskDateTime.msecsTo(currentDateTime) / 60000;
-        if (timeDifferenceMinutes <= timeThresholdMinutes) {
+        if (timeDifferenceMinutes <= timeThresholdMinutes - 1) {
             filteredTasks.append(task);
         }
     }
