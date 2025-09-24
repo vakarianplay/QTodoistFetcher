@@ -22,10 +22,6 @@ TodoistData::~TodoistData()
 
 void TodoistData::loadSettings()
 {
-    // Settings setup;
-    // settingsData.apiToken = setup.apiToken;
-    // settingsData.assigneeId = setup.assigneeId;
-    // settingsData.projectId = setup.projectId;
     qDebug() << settingsData.apiToken << "   " << settingsData.timerThreshold << "  " << settingsData.tgUser;
 }
 
@@ -36,19 +32,16 @@ void TodoistData::callFetcher()
 }
 
 void TodoistData::fetchTasks(QNetworkAccessManager &manager) {
-    QUrl url("https://api.todoist.com/rest/v2/tasks"); // URL для получения задач
+    QUrl url("https://api.todoist.com/rest/v2/tasks");
     QNetworkRequest request(url);
 
-    // Установка заголовков
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", QString("Bearer %1").arg(settingsData.apiToken).toUtf8());
 
-    // Выполняем GET запрос
     QNetworkReply *reply = manager.get(request);
 
     QObject::connect(reply, &QNetworkReply::finished, [reply, this]() {
         if (reply->error() != QNetworkReply::NoError) {
-            qDebug() << "Ошибка запроса: " << reply->errorString().toStdString();
             reply->deleteLater();
             return;
         }
@@ -59,11 +52,9 @@ void TodoistData::fetchTasks(QNetworkAccessManager &manager) {
         qDebug() << jsonDoc;
 
         if (!jsonDoc.isArray()) {
-            qDebug() << "Некорректный формат JSON";
             reply->deleteLater();
             return;
         }
-
         reply->deleteLater();
         taskSerializer(jsonDoc.array());
     });
@@ -74,24 +65,14 @@ void TodoistData::taskSerializer(QJsonArray tasks_)
     QJsonArray tasks = tasks_;
 
     if (tasks.isEmpty()) {
-        qDebug() << "Нет задач, назначенных на вас.";
+        qDebug() << "Not assigned tasks.";
     } else {
-        qDebug() << "Задачи, назначенные на вас:" << Qt::endl;
+        qDebug() << "Assigned tasks:" << Qt::endl;
 
-        for (const QJsonValue &taskValue : tasks) {
+        for (const QJsonValue &taskValue : tasks)
             QJsonObject taskObject = taskValue.toObject();
-            // qDebug() << "- " << taskObject["content"].toString() << " ---------- " << taskObject["project_id"].toString() << " -- "
-            //          << taskObject["assignee_id"].toString() << " -- " << taskObject["url"].toString() << " | " << taskObject["created_at"].toString();
 
-
-            // if (taskObject.contains("project_id")) {
-            //     qDebug() << " (Проект ID: " << taskObject["project_id"].toInt() << ")";
-            // }
-
-        }
         QString taskData = filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), settingsData.timerThreshold).join(" \n ");
-        qDebug() << taskData;
-        // qDebug() << filterRecentTasks(taskFilter(tasks, settingsData.projectId, settingsData.assigneeId), 30);
         TgSender *tgSender = new TgSender(taskData);
 
         if (tgSender)
@@ -121,15 +102,15 @@ QStringList TodoistData::taskFilter(const QJsonArray &tasks, const QString &proj
     return result;
 }
 
-QStringList TodoistData::filterRecentTasks(const QStringList &tasks, int timeThresholdMinutes) {
+QStringList TodoistData::filterRecentTasks(const QStringList &tasks, int timeThresholdMinutes)
+{
     QStringList filteredTasks;
     QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
 
     for (const QString &task : tasks) {
-        // Парсим строку, чтобы извлечь метку времени (после последнего "---")
         QStringList parts = task.split("---");
         if (parts.size() < 3) {
-            qDebug() << "Ошибка: некорректный формат строки:" << task;
+            qDebug() << "Error. Incorrect format string:" << task;
             continue;
         }
 
@@ -137,10 +118,9 @@ QStringList TodoistData::filterRecentTasks(const QStringList &tasks, int timeThr
         QDateTime taskDateTime = QDateTime::fromString(timestampStr, Qt::ISODate);
 
         if (!taskDateTime.isValid()) {
-            qDebug() << "Ошибка: некорректный формат времени:" << timestampStr;
+            qDebug() << "Error. Incorrect time format:" << timestampStr;
             continue;
         }
-
 
         qint64 timeDifferenceMinutes = taskDateTime.msecsTo(currentDateTime) / 60000;
         if (timeDifferenceMinutes <= timeThresholdMinutes - 1) {

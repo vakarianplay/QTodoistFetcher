@@ -30,15 +30,6 @@ private:
     Settings settingsData;
     QNetworkAccessManager manager;
     QTimer* threshold;
-    // struct SettingsParams
-    // {
-    //     QString apiToken;
-    //     QString projectId;
-    //     QString assigneeId;
-    // };
-
-    // SettingsParams settingsData;
-
     void loadSettings();
     void fetchTasks(QNetworkAccessManager &manager);
     void taskSerializer(QJsonArray tasks_);
