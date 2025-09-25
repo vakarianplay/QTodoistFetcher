@@ -17,7 +17,7 @@
  --------------------------------
 
 
-##№ ✨ Features
+### ✨ Features
 
 - 🔄 Automatic task fetching from Todoist
 - 📱 Notification delivery to Telegram chats
